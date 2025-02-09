@@ -100,7 +100,7 @@ Device.hasMany(BasketDevice), BasketDevice.belongsTo(Device);
 /** У устройств может быть много информации о нем
  * Информация об устройстве принадлежит устройству
  */
-Device.hasMany(DeviceInfo);
+Device.hasMany(DeviceInfo, { as: "info" });
 DeviceInfo.belongsTo(Device);
 
 /** Связующая таблица, остальные поля добавятся автоматически */

@@ -26,7 +26,7 @@ class BrandController {
   }
   async delete(req, res, next) {
     try {
-      const { id } = req.query;
+      const { id } = req.params;
       if (!id) return next(ApiError.badRequest("id не задан"));
       const deleteCount = await Brand.destroy({ where: { id } });
       if (deleteCount === 0)
