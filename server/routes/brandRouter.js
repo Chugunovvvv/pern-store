@@ -1,8 +1,9 @@
 const Router = require("express");
 const router = Router();
 const brandController = require("../controllers/brandController");
-router.post("/", brandController.create);
+const checkRoleMiddleware = require("../middleware/checkRoleMiddleware");
+router.post("/", checkRoleMiddleware("ADMIN"), brandController.create);
 router.get("/", brandController.getAll);
-router.delete("/:id", brandController.delete);
+router.delete("/:id", checkRoleMiddleware("ADMIN"), brandController.delete);
 
 module.exports = router;
