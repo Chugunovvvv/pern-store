@@ -1,5 +1,13 @@
+import { Col, Container } from "react-bootstrap";
+
 const DevicePage = () => {
-  return <div>device</div>;
+  return (
+    <Container>
+      <Col md={4}></Col>
+      <Col md={4}></Col>
+      <Col md={4}></Col>
+    </Container>
+  );
 };
 
 export default DevicePage;
