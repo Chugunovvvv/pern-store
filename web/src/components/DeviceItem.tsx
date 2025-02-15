@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, Col, Image } from "react-bootstrap";
 import { Devices } from "../types/types";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +16,11 @@ const DeviceItem = ({ device }: IDeviceItem) => {
       onClick={() => navigate(DEVICE_ROUTE + "/" + device.id)}
     >
       <Card style={{ cursor: "pointer", padding: "20px" }}>
-        <Image height={150} width={185} src={device.img} />
+        <Image
+          height={150}
+          width={185}
+          src={import.meta.env.VITE_API_URL + "/" + device.img}
+        />
         <div className="mt-2 text-black-50 d-flex justify-content-between align-items-center">
           <div>Samsung</div>
           <div>

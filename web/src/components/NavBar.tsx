@@ -1,12 +1,18 @@
 import React, { useContext } from "react";
 import { Context } from "../main";
 import { Button, Container, Nav, Navbar } from "react-bootstrap";
-import { NavLink } from "react-router-dom";
-import { SHOP_ROUTE } from "../utils/consts";
+import { NavLink, useNavigate } from "react-router-dom";
+import { ADMIN_ROUTE, LOGIN_ROUTE, SHOP_ROUTE } from "../utils/consts";
 import { observer } from "mobx-react-lite";
 
 const NavBar: React.FC = observer(() => {
   const { user } = useContext(Context);
+  const navigate = useNavigate();
+
+  const logOut = () => {
+    user.setUser({});
+    user.setIsAuth(false);
+  };
   return (
     <Navbar bg="dark" data-bs-theme="dark">
       <Container>
@@ -16,12 +22,14 @@ const NavBar: React.FC = observer(() => {
         <Nav className="ml-auto">
           {user.isAuth ? (
             <div style={{ display: "flex", gap: "5px" }}>
-              <Button onClick={() => user.setIsAuth(false)}>Выйти</Button>
-              <Button>Админ панель</Button>
+              <Button onClick={() => logOut()}>Выйти</Button>
+              <Button onClick={() => navigate(ADMIN_ROUTE)}>
+                Админ панель
+              </Button>
             </div>
           ) : (
             <div style={{ display: "flex", gap: "5px" }}>
-              <Button onClick={() => user.setIsAuth(true)}>Авторизация</Button>
+              <Button onClick={() => navigate(LOGIN_ROUTE)}>Авторизация</Button>
             </div>
           )}
         </Nav>
