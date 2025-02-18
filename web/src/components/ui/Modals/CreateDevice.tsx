@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Button,
   Col,
@@ -9,6 +9,8 @@ import {
   Row,
 } from "react-bootstrap";
 import { Context } from "../../../main";
+import { createDevice, fetchBrands, fetchTypes } from "../../../http/deviceAPI";
+import { observer } from "mobx-react-lite";
 
 interface Props {
   show: boolean;
@@ -23,9 +25,33 @@ const initialInfo = [
   },
 ];
 
-const CreateDevice: React.FC<Props> = ({ show, onHide }) => {
+const CreateDevice: React.FC<Props> = observer(({ show, onHide }) => {
   const { device } = useContext(Context);
   const [info, setInfo] = useState(initialInfo);
+
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState(0);
+  const [file, setFile] = useState(null);
+
+  useEffect(() => {
+    fetchTypes().then((data) => {
+      console.log("Fetched types:", data);
+      device.setTypes(data);
+    });
+    fetchBrands().then((data) => {
+      device.setBrands(data);
+      console.log("Fetched brands:", data);
+    });
+  }, []);
+  const selectedFile = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const changeInfo = (key, value, number) => {
+    setInfo(
+      info.map((i) => (i.number === number ? { ...i, [key]: value } : i))
+    );
+  };
 
   const addInfo = () => {
     setInfo([...info, { title: "", description: "", number: Date.now() }]);
@@ -33,6 +59,24 @@ const CreateDevice: React.FC<Props> = ({ show, onHide }) => {
   const removeInfo = (number) => {
     setInfo(info.filter((i) => i.number !== number));
   };
+
+  const addDevice = () => {
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("price", `${price}`);
+    formData.append("img", file);
+    formData.append("brandId", device.selectedBrand.id);
+    formData.append("typeId", device.selectedType.id);
+    formData.append("info", JSON.stringify(info));
+
+    createDevice(formData)
+      .then((data) => {
+        console.log("Device created response:", data);
+        onHide();
+      })
+      .catch((e) => console.error(e));
+  };
+
   return (
     <Modal
       show={show}
@@ -50,48 +94,88 @@ const CreateDevice: React.FC<Props> = ({ show, onHide }) => {
         <Form>
           <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
             <Dropdown>
-              <Dropdown.Toggle variant="success" id="dropdown-basic">
-                Выберите тип
+              <Dropdown.Toggle
+                name="type"
+                variant="success"
+                id="dropdown-basic"
+              >
+                {device.selectedType.name || "Выберите тип"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu>
                 {device.types.map((type) => (
-                  <DropdownItem key={type.id}>{type.name}</DropdownItem>
+                  <DropdownItem
+                    onClick={() => device.setSelectedType(type)}
+                    key={type.id}
+                  >
+                    {type.name}
+                  </DropdownItem>
                 ))}
               </Dropdown.Menu>
             </Dropdown>
             <Dropdown>
-              <Dropdown.Toggle variant="success" id="dropdown-basic">
-                Выберите бренд
+              <Dropdown.Toggle
+                name="brand"
+                variant="success"
+                id="dropdown-basic"
+              >
+                {device.selectedBrand.name || "Выберите бренд"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu>
                 {device.brands.map((brand) => (
-                  <DropdownItem key={brand.id}>{brand.name}</DropdownItem>
+                  <DropdownItem
+                    onClick={() => device.setSelectedBrand(brand)}
+                    key={brand.id}
+                  >
+                    {brand.name}
+                  </DropdownItem>
                 ))}
               </Dropdown.Menu>
             </Dropdown>
           </div>
           <Form.Control
             className="mt-2"
+            name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder="Введите название устройства"
           ></Form.Control>
           <Form.Control
             type="number"
+            name="price"
             className="mt-2"
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
             placeholder="Введите стоимость устройства"
           ></Form.Control>
-          <Form.Control className="mt-2" type="file"></Form.Control>
+          <Form.Control
+            onChange={selectedFile}
+            className="mt-2"
+            type="file"
+          ></Form.Control>
           <Button className="mt-2" onClick={addInfo}>
             Добавить новое свойство
           </Button>
           {info.map((i) => (
             <Row key={i.number} className="mt-4">
               <Col md={4}>
-                <Form.Control placeholder="Введите название"></Form.Control>
+                <Form.Control
+                  value={i.title}
+                  onChange={(e) =>
+                    changeInfo("title", e.target.value, i.number)
+                  }
+                  placeholder="Введите название"
+                ></Form.Control>
               </Col>
               <Col md={4}>
-                <Form.Control placeholder="Введите описание"></Form.Control>
+                <Form.Control
+                  value={i.description}
+                  onChange={(e) =>
+                    changeInfo("description", e.target.value, i.number)
+                  }
+                  placeholder="Введите описание"
+                ></Form.Control>
               </Col>
               <Col md={4}>
                 <Button variant="danger" onClick={() => removeInfo(i.number)}>
@@ -106,12 +190,12 @@ const CreateDevice: React.FC<Props> = ({ show, onHide }) => {
         <Button onClick={onHide} variant="danger">
           Закрыть
         </Button>
-        <Button onClick={onHide} variant="success">
+        <Button onClick={addDevice} variant="success">
           Добавить
         </Button>
       </Modal.Footer>
     </Modal>
   );
-};
+});
 
 export default CreateDevice;
